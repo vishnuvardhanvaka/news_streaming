@@ -1,21 +1,79 @@
+"use client"
+
 import Image from "next/image";
 import { Search } from 'lucide-react';
 import { format } from 'date-fns';
+import { useEffect, useState } from "react";
 
 export default function Home() {
   const currentDate = new Date();
-
-  // Format the date as "Wednesday, 27 March"
   const formattedDate = format(currentDate, 'EEEE, d MMMM');
+  const [weatherData,setWeatherData]=useState({
+    'cityName':'Nandigama',
+    'temperature':'--',
+    'Time':'',
+    'skyDesc':'',
+    'other_data':''
+})
+
+  useEffect(()=>{
+    getWeather()
+    
+
+  },[])
+  
+  async function getWeather(){
+    console.log('calling weather')
+    let form=new FormData()
+    form.append('city','Nandigama')
+    try {
+      const response = await fetch('https://newsweatherapi.vercel.app/getWeather/', {
+        method: 'POST',
+        body: form
+      });
+  
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+  
+      const data = await response.json();
+      setWeatherData(data.weatherData)
+      console.log(data);
+      // Handle the fetched data as needed
+    } catch (error) {
+      console.error('There was a problem with the fetch operation:', error);
+    }
+  };
+
+  async function getHeadlines(){
+    console.log('calling weather')
+    let form=new FormData()
+    form.append('city','Nandigama')
+    try {
+      const response = await fetch('https://newsweatherapi.vercel.app/getLatestHeadlines', {
+        method: 'GET'
+      });
+  
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+  
+      const data = await response.json();
+      console.log(data);
+      // Handle the fetched data as needed
+    } catch (error) {
+      console.error('There was a problem with the fetch operation:', error);
+    }
+  };
 
   return (
     <div className="bg-[#f8feff]">
 
-      <nav className="bg-white sticky border-b-[1.5px] border-[#c1bdbd] py-3 flex items-center justify-between">
-        <h1 className="inline-flex items-center m-4 text-2xl font-bold">
+      <nav className="bg-white sticky px-4 border-b-[1.5px] border-[#c1bdbd] py-3 flex items-center justify-between">
+        <div className="inline-flex items-center m-4 text-2xl font-bold">
           <h1 className="text-3xl font-extrabold">Info</h1>
           <span className="bg-[#faae3c] text-white px-2 py-1 mx-2 rounded-lg">Sphere</span>
-        </h1>
+        </div>
 
         <div className=" mx-4 flex gap-x-6 text-md">
           <h1 className="hover:bg-[#efeeee] hover:cursor-pointer py-1 px-2 rounded-md">Local</h1>
@@ -51,11 +109,11 @@ export default function Home() {
             <img src='/left-arrow.svg' className="w-6 h-6 mt-3" alt="go" />
           </div>
           <div className="ml-2">
-          <h1 className="font-bold text-2xl my-1 text-gray-800">Nandigama</h1>
-          <h1 className="font-bold text-3xl">36°C</h1>
-          <a href="https://weather.com/en-IN/weather/today/l/16.44537,80.54498?par=google" className="text-sm text-blue-600">More on Weather.com</a>
+            <h1 className="font-bold text-2xl my-1 text-gray-800">{weatherData.cityName}</h1>
+            <h1 className="font-bold text-3xl">{weatherData?.temperature}</h1>
+            <a href="https://weather.com/en-IN/weather/today/l/fc0c4a316e2315d105b9e7dcc77efe6a54071f265850b25ac57d5a5d2267c96c" className="text-sm text-blue-600">More on Weather.com</a>
           </div>
-          
+
         </div>
       </div>
 
