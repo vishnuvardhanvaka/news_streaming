@@ -18,21 +18,47 @@ export default function Home() {
     'other_data': ''
   })
   interface Headline {
-    title: string;
-    article_link: string;
-    article_from: string;
-    img_url: string;
-    time_text: string;
-    datetime: string;
+
   }
-  const [headlines, setHeadlines] = useState<Headline[]>([])
+  const [headlines, setHeadlines] = useState<any>([])
 
   useEffect(() => {
     getWeather()
-    getHeadlines()
+    // getHeadlines()
+    getGnewsApiData()
 
 
   }, [])
+
+  let gnewsapikey = '72cc3a0e40cde31dcd9e302002d60ad6';
+  let category = 'general';
+  let url = 'https://gnews.io/api/v4/top-headlines?category=' + category + '&lang=en&country=us&max=10&apikey=' + gnewsapikey;
+
+  async function getGnewsApiData() {
+
+    fetch(url)
+      .then(function (response) {
+        return response.json();
+      })
+      .then(function (data) {
+        let articles = data.articles;
+        setHeadlines(articles)
+
+        for (let i = 0; i < articles.length; i++) {
+          // articles[i].title
+          console.log(articles[i])
+          console.log("Title: " + articles[i]['title']);
+          // articles[i].description
+          console.log("Description: " + articles[i]['description']);
+          // You can replace {property} below with any of the article properties returned by the API.
+          // articles[i].{property}
+          // console.log(articles[i]['{property}']);
+
+          // Delete this line to display all the articles returned by the request. Currently only the first article is displayed.
+          break;
+        }
+      });
+  }
 
   async function getWeather() {
     console.log('calling weather')
@@ -122,8 +148,10 @@ export default function Home() {
               <img src='https://ssl.gstatic.com/onebox/weather/64/partly_cloudy.png' alt="weather icon" />
             ) : weatherData?.skyDesc === 'Clear with periodic clouds' ? (
               <img src='https://ssl.gstatic.com/onebox/weather/64/sunny_s_cloudy.png' alt="weather icon" />
+            ) : weatherData?.skyDesc === 'Sunny' ? (
+              <img src='https://ssl.gstatic.com/onebox/weather/64/sunny.png' alt="weather icon" />
             ) : (
-              <img src='/defaultWeatherIcon.png' alt="weather icon" />
+              <img src='/weatherIcon.png' alt="weather icon" />
             )}
 
             <img src='/left-arrow.svg' className="w-6 h-6 mt-3" alt="go" />
@@ -140,25 +168,52 @@ export default function Home() {
       <div className="ml-44 mr-10 flex justify-between gap-x-2">
         <div className="rounded-xl bg-white  p-8 w-[60%]">
           <h1 className="border-b-[1.5px] border-[#c1bdbd] pb-3 text-xl flex items-center text-blue-500 hover:cursor-pointer font-semibold">Top Stories <ChevronRight className="mx-1 w-5 h-5 text-blue-500" /></h1>
-          {headlines.map((headline, index) => (
-            <div key='index' className="border-2 p-4">
-              <div className="flex">
-                <div>
-                  <Link target="_blank" href={headline.article_link} className="text-lg">{headline.title}.</Link>
-                  <div className="flex items-center justify-between">
-                    <img src={headline.article_from} className="my-2" />
-                    <h1 className="text-sm text-gray-600">{headline.time_text}</h1>
+          {headlines.map((headline: any, index: number) => {
+            // Convert publishedAt string to Date object
+            const publishedAtDate = new Date(headline.publishedAt);
+
+            // Calculate the time difference in milliseconds
+            const timeDifferenceMs = Date.now() - publishedAtDate.getTime();
+
+            // Calculate time difference in seconds, minutes, hours, and days
+            const seconds = Math.floor(timeDifferenceMs / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+
+            // Define the string to display
+            let timeAgo = '';
+            if (days > 0) {
+              timeAgo = `${days} day${days > 1 ? 's' : ''} ago`;
+            } else if (hours > 0) {
+              timeAgo = `${hours} hour${hours > 1 ? 's' : ''} ago`;
+            } else if (minutes > 0) {
+              timeAgo = `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+            } else {
+              timeAgo = `${seconds} second${seconds > 1 ? 's' : ''} ago`;
+            }
+
+            return (
+              <div key={index} className="border-2 p-4">
+                <div className="flex">
+                  <div>
+                    <Link target="_blank" href={headline.url} className="text-lg">{headline.title}.</Link>
+                    <div className="flex items-center justify-between">
+                      {/* <img src={headline.source.name} className="my-2" /> */}
+                      <h1>{headline.source.name}</h1>
+                      <h1 className="text-sm text-gray-600">{timeAgo}</h1>
+                    </div>
                   </div>
+                  <img src={headline.image} className="w-40 h-40 mx-4 rounded-lg" />
                 </div>
-                <img src={headline.img_url} referrerPolicy="no-referrer" />
               </div>
-            </div>
-          ))}
+            );
+          })}
+
         </div>
         <div className="rounded-xl bg-white h-96  p-8 w-[40%]">
           <h1 className="border-b-[1.5px] border-[#c1bdbd] pb-3 text-xl flex items-center text-blue-500 hover:cursor-pointer font-semibold">Market <ChevronRight className="mx-1 w-5 h-5 text-blue-500" /></h1>
         </div>
-
 
       </div>
 
